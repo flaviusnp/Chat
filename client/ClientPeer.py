@@ -1,29 +1,47 @@
 from Message import Message
 from PrivateMessage import PrivateMessage
 import pickle
+import threading
 
 
-class ClientPeer():
+class ClientPeer(threading.Thread):
 
-    def __init__(self, numeUtilizator):
+    def __init__(self, numeUtilizator, message, client, recipient=None):
 
+        threading.Thread.__init__(self)
         self.numeUtilizator = numeUtilizator
+        self.message = message
+        self.client = client
+        self.recipient = recipient
+
+# MUST RECEIVE MESSAGES FROM THE SERVER
+
+    def run(self):
+        print("[STARTING THREAD] ClientPeer thread started")
+        msg = self.sendMessage(self.message, self.recipient)
+        self.client.send(msg)
+        print("[THREAD STOPPING] ClientPeer thread has been ended!")
 
     def sendMessage(self, message, recipient=None):
 
-        m = Message(self.numeUtilizator, message)
+        while message:
 
-        p = PrivateMessage(recipient, self.numeUtilizator, message)
+            m = Message(self.numeUtilizator, message)
 
-        if recipient is None:
+            p = PrivateMessage(recipient, self.numeUtilizator, message)
 
-            mesaj = pickle.dumps(m)
-            print(mesaj)
-            print("Mesaj in ClientPeer")
-            return mesaj
+            if recipient is None:
 
-        else:
-            mesaj = pickle.dumps(p)
-            print(mesaj)
-            print("Mesaj privat in ClientPeer")
-            return mesaj
+                msg = pickle.dumps(m)
+                print(msg)
+                print("Msg in ClientPeer")
+
+                return msg
+
+            else:
+                msg = pickle.dumps(p)
+                print(msg)
+                print("Private msg in ClientPeer")
+
+                return msg
+

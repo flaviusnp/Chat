@@ -4,10 +4,10 @@ import socket
 import threading
 
 
-class Server(ServerPeer):
+class Server():
 
-    def __init__(self, outer_server):
-        super().__init__(outer_server)
+    def __init__(self):
+        pass
 
     def start(self, MAX_CLIENTS, outer_SERVER):
 
@@ -19,8 +19,9 @@ class Server(ServerPeer):
             conn, addr = server.accept()
 
             if conn and addr:
-                thread = threading.Thread(target=ServerPeer.run, args=(self, conn, addr))
-                thread.start()
+
+                sp_thread = ServerPeer(server, conn, addr)
+                sp_thread.start()
                 print(f"[ACTIVE_CONNECTIONS] {threading.activeCount() - 1}")
 
 
@@ -28,15 +29,15 @@ if __name__ == "__main__":
 
     sc = ServerConfig()
 
-    SERVER = socket.gethostbyname(socket.gethostname())
-    ADDR = (SERVER, int(sc.getTcpPort()))
+    IP = socket.gethostbyname(socket.gethostname())
+    ADDR = (IP, int(sc.getTcpPort()))
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(ADDR)
 
-    s = Server(server)
+    s = Server()
 
     print("[STARTING SERVER] server is starting...")
-    s.start(int(sc.getMaxClients()), SERVER)
+    s.start(int(sc.getMaxClients()), IP)
 
 

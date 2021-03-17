@@ -14,6 +14,11 @@ class Message:
 
     def __str__(self):
         return self.numeExpeditor + ": " + self.continut
+
+    def getSender(self):
+        return self.numeExpeditor
+
+
 """
     def __setattr__(self, *args):
         raise AttributeError("Attributes of Message cannot be changed")
