@@ -10,6 +10,8 @@ class PrivateMessage(Message):
         self.numeExpeditor = numeExpeditor
         self.continut = continut
 
+        # This class can't be immutable because a socket function creates
+        # an instance of this class without calling the constructor
 
         """
         super().__init__(numeExpeditor, continut)

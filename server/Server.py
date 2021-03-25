@@ -4,40 +4,44 @@ import socket
 import threading
 
 
-class Server():
+class Server:
 
-    def __init__(self):
-        pass
+    def __init__(self, MAX_CLIENTS, TCP_PORT):
 
-    def start(self, MAX_CLIENTS, outer_SERVER):
+        self.MAX_CLIENTS = MAX_CLIENTS
+        self.TCP_PORT = TCP_PORT
 
-        server.listen(MAX_CLIENTS)
-        print(f"[LISTENING] Server is listening on {outer_SERVER}")
+        self.IP = socket.gethostbyname(socket.gethostname())
+        ADDR = (self.IP, self.TCP_PORT)
+
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(ADDR)
+        self.users = []
+
+    def listen(self):
+
+        self.server.listen(self.MAX_CLIENTS)
+        print(f"[LISTENING] Server is listening on {self.IP}")
 
         while True:
 
-            conn, addr = server.accept()
+            conn, addr = self.server.accept()
 
             if conn and addr:
 
-                sp_thread = ServerPeer(server, conn, addr)
+                sp_thread = ServerPeer(self, conn, addr)
                 sp_thread.start()
                 print(f"[ACTIVE_CONNECTIONS] {threading.activeCount() - 1}")
+
+    def removeClient(self):
+        pass
 
 
 if __name__ == "__main__":
 
     sc = ServerConfig()
-
-    IP = socket.gethostbyname(socket.gethostname())
-    ADDR = (IP, int(sc.getTcpPort()))
-
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(ADDR)
-
-    s = Server()
-
+    s = Server(int(sc.getMaxClients()), int(sc.getTcpPort()))
     print("[STARTING SERVER] server is starting...")
-    s.start(int(sc.getMaxClients()), IP)
+    s.listen()
 
 

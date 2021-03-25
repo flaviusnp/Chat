@@ -7,6 +7,8 @@ class Message:
         self.numeExpeditor = numeExpeditor
         self.continut = continut
 
+        # This class can't be immutable because a socket function creates
+        # an instance of this class without calling the constructor
         """
         object.__setattr__(self, 'numeExpeditor', numeExpeditor)
         object.__setattr__(self, 'continut', continut)

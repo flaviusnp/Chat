@@ -4,10 +4,10 @@ import threading
 
 class ServerPeer(threading.Thread):
 
-    def __init__(self, server, conn, addr):
+    def __init__(self, serverObject, conn, addr):
         threading.Thread.__init__(self)
-        self.server = server
         self.HEADER = 1024
+        self.serverObject = serverObject
         self.conn = conn
         self.addr = addr
 
@@ -15,36 +15,58 @@ class ServerPeer(threading.Thread):
         print("[STARTING THREAD] ServerPeer thread has started.")
         # Must read Message and PrivateMessage and send it to
         # other users/user
-        self.receiveMessage(self.conn, self.addr)
+        self.receiveMessage()
         print("[STOPPING THREAD] ServerPeer thread has stopped.")
 
-    def receiveMessage(self, conn, addr):
+    def receiveMessage(self):
 
-        users = []
+        connected = True
 
-        while addr:
+        while self.addr and connected:
 
-            if addr not in users:
-                users.append(addr)
-                print(f"[NEW_CONNECTION] {addr} connected.")
+            message = b''
+            try:
+                message = self.conn.recv(self.HEADER)
 
-            connected = True
+            except:
+                pass
 
-            while connected:
+            if message != '':
 
-                full_message = b''
-                try:
-                    message = conn.recv(self.HEADER)
-                    if len(message) <= 0:
-                        break
-                    full_message += message
+                msg = pickle.loads(message)
 
-                except:
+                if str(msg).split(' ')[0] == '/name:' and self.addr not in [user[0] for user in self.serverObject.users]:
+                    user = str(msg).split(' ')[1]
+                    self.serverObject.users.append((self.addr, self.conn, user))
+                    print(self.serverObject.users)
+                    print(f"[NEW_CONNECTION] {self.addr} connected.")
                     continue
 
-                    # verify select()
-                if full_message != '':
-                    msg = pickle.loads(full_message)
+                if msg == '/q':
+                    connected = False
+                    self.conn.close()
+
+                if str(msg).split(' ')[0] == '(priv)':
+                    string = ''.join(str(msg).split(' ')[1] + ' ' + ' '.join(str(msg).split(' ')[3:]))
+
+                    recipient = str(msg).split(' ')[2]
+                    conn_recipient = '0'
+
+                    for user in self.serverObject.users:
+                        if user[2] == recipient:
+
+                            conn_recipient = user[1]
+                            break
+
+                    message = pickle.dumps(string)
+                    if conn_recipient != '0':
+                        print(string)
+                        print(message)
+                        conn_recipient.send(message)
+                        print("Am trimis mesajul de la server")
+
+                else:
                     print(msg)
 
-            conn.close()
+    def getUsername(self, message):
+        return message.getSender()
